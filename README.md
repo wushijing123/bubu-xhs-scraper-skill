@@ -1,5 +1,7 @@
 # xhs-scraper-skill
 
+[**中文文档**](./README.zh-CN.md)
+
 > A [Claude Code](https://claude.ai/claude-code) skill for scraping Xiaohongshu (小红书 / RedNote) data via [TikHub API](https://tikhub.io).
 > Compatible with **Claude Code** and **Openclaw**.
 
