@@ -11,7 +11,7 @@ metadata:
         - python3
     primaryEnv: TIKHUB_API_KEY
     emoji: 🔍
-    homepage: https://github.com/wushijing123/xhs-scraper-skill
+    homepage: https://github.com/wushijing123/bubu-xhs-scraper-skill
     setup:
       command: pip3 install httpx
 ---
