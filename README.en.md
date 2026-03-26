@@ -81,6 +81,8 @@ Edit `~/.claude/settings.json`:
 }
 ```
 
+> **Lazy mode:** Don't want to edit the file manually? Just paste your API key into Claude Code or Openclaw and say "add this to my config: `your-key`" — it'll handle the rest.
+
 ---
 
 ### 4. Install Python dependency

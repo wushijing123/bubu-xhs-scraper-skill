@@ -86,6 +86,8 @@ npx xhs-scraper-skill
 }
 ```
 
+> **懒人方式：** 不想手动改文件？直接把 API Key 丢给 Claude Code 或 Openclaw，说一句「帮我把这个写入配置：`你的key`」，它会自动帮你完成配置。
+
 ---
 
 ### 第四步 — 安装 Python 依赖
