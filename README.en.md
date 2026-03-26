@@ -1,9 +1,9 @@
-# xhs-scraper-skill
+# bubu-xhs-scraper-skill
 
-[**中文文档**](./README.md)
+[**中文文档**](./README.md) · [![npm](https://img.shields.io/npm/v/bubu-xhs-scraper-skill)](https://www.npmjs.com/package/bubu-xhs-scraper-skill)
 
-> A [Claude Code](https://claude.ai/claude-code) skill for scraping Xiaohongshu (小红书 / RedNote) data via [TikHub API](https://tikhub.io).
-> Compatible with **Claude Code** and **Openclaw**.
+> A [Claude Code](https://claude.ai/claude-code) & **Openclaw** skill for scraping multi-platform social media data via [TikHub API](https://tikhub.io).
+> Supports XHS, Douyin, TikTok, Bilibili, Weibo, YouTube, WeChat, Twitter/X.
 
 ---
 

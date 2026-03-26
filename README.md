@@ -1,8 +1,8 @@
-# xhs-scraper-skill
+# bubu-xhs-scraper-skill
 
-[**English**](./README.en.md)
+[**English**](./README.en.md) · [![npm](https://img.shields.io/npm/v/bubu-xhs-scraper-skill)](https://www.npmjs.com/package/bubu-xhs-scraper-skill)
 
-> 基于 [TikHub API](https://tikhub.io) 的小红书数据抓取工具，适用于 [Claude Code](https://claude.ai/claude-code) 和 **Openclaw**。
+> 基于 [TikHub API](https://tikhub.io) 的多平台社交媒体数据抓取工具，适用于 [Claude Code](https://claude.ai/claude-code) 和 **Openclaw**。支持小红书、抖音、TikTok、Bilibili、微博、YouTube、微信公众号、视频号、Twitter/X。
 
 ---
 

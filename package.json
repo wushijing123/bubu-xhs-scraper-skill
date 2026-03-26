@@ -4,7 +4,7 @@
   "description": "Multi-platform social media scraper skill for Claude Code & Openclaw, powered by TikHub API. Supports XHS, Douyin, TikTok, Bilibili, Weibo, YouTube, WeChat, Twitter/X.",
   "type": "module",
   "bin": {
-    "bubu-xhs-scraper-skill": "./bin/install.mjs"
+    "bubu-xhs-scraper-skill": "bin/install.mjs"
   },
   "files": [
     "bin/",
@@ -30,7 +30,7 @@
   "author": "wushijing123",
   "repository": {
     "type": "git",
-    "url": "https://github.com/wushijing123/xhs-scraper-skill.git"
+    "url": "git+https://github.com/wushijing123/xhs-scraper-skill.git"
   },
   "license": "MIT",
   "engines": {
