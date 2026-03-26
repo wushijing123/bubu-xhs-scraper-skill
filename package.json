@@ -1,0 +1,32 @@
+{
+  "name": "xhs-scraper-skill",
+  "version": "1.0.0",
+  "description": "Claude Code skill for scraping Xiaohongshu (XHS) data via TikHub API",
+  "type": "module",
+  "bin": {
+    "xhs-scraper-skill": "./bin/install.mjs"
+  },
+  "files": [
+    "bin/",
+    "skills/"
+  ],
+  "keywords": [
+    "claude",
+    "claude-code",
+    "openclaw",
+    "skill",
+    "xiaohongshu",
+    "xhs",
+    "scraper",
+    "tikhub"
+  ],
+  "author": "wushijing123",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wushijing123/xhs-scraper-skill.git"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}
