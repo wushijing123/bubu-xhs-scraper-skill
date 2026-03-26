@@ -37,13 +37,26 @@ Talk to Claude in plain language — no commands, no code. Claude will automatic
 获取这个笔记的所有评论
 ```
 
+**Supported Platforms:**
+
+| Platform | User Info | Content List | Content Detail | Comments | Search |
+|----------|-----------|-------------|----------------|----------|--------|
+| Xiaohongshu (XHS) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Douyin | ✅ | ✅ | ✅ | ✅ | ✅ |
+| TikTok | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Bilibili | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Weibo | ✅ | ✅ | ✅ | — | ✅ |
+| WeChat MP (公众号) | — | ✅ | ✅ | ✅ | — |
+| WeChat Channels (视频号) | ✅ | — | ✅ | ✅ | ✅ |
+| Twitter / X | ✅ | ✅ | — | — | ✅ |
+| YouTube | — | — | — | — | ✅ |
+
 **Supports:**
-- Search users by keyword
-- Get user profile (followers, notes count, bio)
-- Fetch all notes from a user (auto-pagination)
-- Get note detail — title, description, stats, cover image, topics
-- Get note comments
-- Get notes by topic / home feed
+- Search users / content / topics across platforms
+- Get user profile (followers, post count, bio)
+- Fetch all content from a user (auto-pagination)
+- Get content detail — title, description, stats, cover image, topics
+- Get comments
 - Export to Excel / JSON
 
 ---

@@ -1,42 +1,15 @@
 ---
 name: xhs-scraper
-description: 小红书数据抓取工具，基于 TikHub API。当用户想要抓取小红书笔记、用户信息、搜索内容、评论时，必须使用此 skill。触发词包括：「小红书抓取」「小红书数据」「抓取笔记」「获取小红书用户」「搜索小红书」「小红书评论」「XHS scrape」「xhs data」「xiaohongshu」。即使用户只是说「帮我抓一下小红书上的 xxx」也应该触发此 skill。
-version: 1.0.0
-metadata:
-  openclaw:
-    requires:
-      env:
-        - TIKHUB_API_KEY
-      bins:
-        - python3
-    primaryEnv: TIKHUB_API_KEY
-    emoji: "🔍"
-    homepage: https://github.com/wushijing123/xhs-scraper-skill
-    setup:
-      - description: Install Python dependency
-        command: pip3 install httpx
+description: 多平台社交媒体数据抓取工具，基于 TikHub API。支持小红书、抖音、TikTok、Bilibili、微博、YouTube、微信公众号、视频号、Twitter/X。触发词：「小红书」「抖音」「TikTok」「B站」「bilibili」「微博」「YouTube」「公众号」「视频号」「Twitter」「X平台」「抓取数据」「获取用户」「搜索」「评论」「笔记」「视频」。只要用户提到这些平台 + 数据需求，立即触发此 skill。
 ---
 
-# 小红书抓取 Skill（TikHub API）
+# 多平台数据抓取 Skill（TikHub API）
 
 ## 概述
 
-通过 TikHub API 直接 HTTP 调用抓取小红书数据。API key 存储在环境变量 `TIKHUB_API_KEY` 中，**无需用户每次提供**。
+通过 TikHub API 直接 HTTP 调用抓取多平台数据。API key 存储在环境变量 `TIKHUB_API_KEY` 中，**无需用户提供**。
 
 > **重要**：不要使用 `tikhub` Python SDK，它的端点已过时。直接用 `httpx` 调用 API。
-
-## 快速开始
-
-1. 在 [TikHub 控制台](https://user.tikhub.io) 注册并获取 API key
-2. 写入 `~/.claude/settings.json`：
-   ```json
-   {
-     "env": {
-       "TIKHUB_API_KEY": "your-api-key-here"
-     }
-   }
-   ```
-3. 安装依赖：`pip3 install httpx`
 
 ## 安装依赖
 
@@ -44,210 +17,246 @@ metadata:
 pip3 install httpx
 ```
 
-## 已验证可用的端点
-
-| 功能 | 端点 | 参数 |
-|------|------|------|
-| 搜索用户 | `GET /api/v1/xiaohongshu/web/search_users` | `keyword`, `page` |
-| 获取用户信息（Web） | `GET /api/v1/xiaohongshu/web/get_user_info` | `user_id` |
-| 获取用户信息（App） | `GET /api/v1/xiaohongshu/app/get_user_info` | `user_id` |
-| 获取用户笔记列表（Web） | `GET /api/v1/xiaohongshu/web/get_user_notes_v2` | `user_id`, `cursor` |
-| 获取用户笔记列表（App） | `GET /api/v1/xiaohongshu/app/get_user_notes` | `user_id`, `cursor` |
-| 获取笔记详情（App） | `GET /api/v1/xiaohongshu/app/get_note_info` | `share_text` 或 `note_id` |
-| 获取话题笔记 | `GET /api/v1/xiaohongshu/app/get_notes_by_topic` | `topic_id` |
-| 获取笔记评论 | `GET /api/v1/xiaohongshu/app/get_note_comments` | `note_id` |
-| 主页推荐笔记 | `GET /api/v1/xiaohongshu/web/get_home_recommend` | 无 |
-
-> **`get_note_info` 参数优先级**：优先用 `note_id`（如 `665f9520...`）；如果只有分享链接则用 `share_text`（如 `https://xhslink.com/a/...` 或完整分享文本）。两个都传时以 `note_id` 为准。
-
 ## 标准代码模板
 
 ```python
-import asyncio
-import os
-import json
-import httpx
-
-BASE_URL = "https://api.tikhub.io"
-API_KEY = os.environ.get("TIKHUB_API_KEY")
-HEADERS = {"Authorization": f"Bearer {API_KEY}"}
-
-async def xhs_get(endpoint: str, params: dict) -> dict:
-    """通用 GET 请求封装"""
-    async with httpx.AsyncClient() as client:
-        r = await client.get(
-            f"{BASE_URL}{endpoint}",
-            params=params,
-            headers=HEADERS,
-            timeout=30
-        )
-        r.raise_for_status()
-        return r.json()
-
-async def main():
-    # 示例：搜索用户
-    result = await xhs_get("/api/v1/xiaohongshu/web/search_users", {"keyword": "美食"})
-    users = result["data"]["data"]["users"]
-    print(f"找到 {len(users)} 个用户")
-    for u in users[:3]:
-        print(f"  {u['name']} - {u.get('sub_title', '')}")
-
-asyncio.run(main())
-```
-
-## 工作流程
-
-1. **明确需求**：抓用户信息？笔记列表？评论？搜索结果？
-2. **提取 ID**：
-   - 用户 URL：`xiaohongshu.com/user/profile/5c1234...` → user_id = `5c1234...`
-   - 笔记 URL：`xiaohongshu.com/explore/6622d8...` → note_id = `6622d8...`
-3. **先验证**：调一条数据，打印结构后再批量
-4. **批量抓取**：循环翻页（cursor）直到数据为空
-5. **导出**：保存 JSON 或 Excel 到工作区
-
-## 批量抓取用户所有笔记
-
-```python
-import asyncio, os, json, httpx
-from datetime import datetime
+import asyncio, os, httpx
 
 BASE_URL = "https://api.tikhub.io"
 HEADERS = {"Authorization": f"Bearer {os.environ.get('TIKHUB_API_KEY')}"}
 
-async def get_all_notes(user_id: str):
-    all_notes = []
-    cursor = None
-    page = 1
-
+async def api_get(endpoint: str, params: dict) -> dict:
     async with httpx.AsyncClient() as client:
-        while True:
-            params = {"user_id": user_id}
-            if cursor:
-                params["cursor"] = cursor
-
-            r = await client.get(
-                f"{BASE_URL}/api/v1/xiaohongshu/app/get_user_notes",
-                params=params, headers=HEADERS, timeout=30
-            )
-            data = r.json()
-
-            inner = data.get("data", {}).get("data", {})
-            notes = inner.get("notes", [])
-            all_notes.extend(notes)
-
-            print(f"第 {page} 页，已抓取 {len(all_notes)} 条")
-
-            cursor = inner.get("cursor")
-            has_more = inner.get("has_more", False)
-            if not has_more or not cursor:
-                break
-
-            page += 1
-            await asyncio.sleep(0.5)  # 防限流
-
-    return all_notes
-
-async def main():
-    user_id = "YOUR_USER_ID"  # 替换为实际 user_id
-    notes = await get_all_notes(user_id)
-
-    with open("notes.json", "w", encoding="utf-8") as f:
-        json.dump(notes, f, ensure_ascii=False, indent=2)
-    print(f"完成，共 {len(notes)} 条笔记，已保存到 notes.json")
-
-asyncio.run(main())
+        r = await client.get(f"{BASE_URL}{endpoint}", params=params, headers=HEADERS, timeout=30)
+        r.raise_for_status()
+        return r.json()
 ```
 
-## 解析响应数据
+---
+
+## 平台一：小红书（Xiaohongshu）
+
+### 可用端点
+
+| 功能 | 端点 | 主要参数 |
+|------|------|---------|
+| 搜索用户 | `GET /api/v1/xiaohongshu/web/search_users` | `keyword`, `page` |
+| 获取用户信息（Web） | `GET /api/v1/xiaohongshu/web/get_user_info` | `user_id` |
+| 获取用户信息（App） | `GET /api/v1/xiaohongshu/app/get_user_info` | `user_id` |
+| 获取用户笔记（Web） | `GET /api/v1/xiaohongshu/web/get_user_notes_v2` | `user_id`, `cursor` |
+| 获取用户笔记（App） | `GET /api/v1/xiaohongshu/app/get_user_notes` | `user_id`, `cursor` |
+| 获取笔记详情 | `GET /api/v1/xiaohongshu/app/get_note_info` | `note_id` 或 `share_text` |
+| 获取笔记评论 | `GET /api/v1/xiaohongshu/app/get_note_comments` | `note_id` |
+| 按话题获取笔记 | `GET /api/v1/xiaohongshu/app/get_notes_by_topic` | `topic_id` |
+| 首页推荐 | `GET /api/v1/xiaohongshu/web/get_home_recommend` | 无 |
+
+### 响应要点
+- **笔记详情**：`data["data"][0]["note_list"][0]`，互动数在顶层字段（`liked_count`/`collected_count`/`comments_count`/`shared_count`），`interact_info` 始终为空
+- **时间戳**：秒级，用 `datetime.fromtimestamp(ts)`
+- **封面图**：`images_list[0]["original"]`（原图）或 `["url"]`（压缩版），CDN 链接有时效性，抓到后立即下载
+- `note_id` 优先于 `share_text`；`xhslink.com` 短链可直接作为 `share_text`
+
+---
+
+## 平台二：抖音（Douyin）
+
+### 可用端点
+
+| 功能 | 端点 | 主要参数 |
+|------|------|---------|
+| 获取用户主页 | `GET /api/v1/douyin/web/handler_user_profile` | `unique_id` 或 `sec_user_id` |
+| 获取用户视频列表 | `GET /api/v1/douyin/web/fetch_user_post_videos` | `sec_user_id`, `max_cursor` |
+| 获取单条视频 | `GET /api/v1/douyin/web/fetch_one_video` | `aweme_id` |
+| 通过分享链接获取视频 | `GET /api/v1/douyin/web/fetch_one_video_by_share_url` | `share_url` |
+| 获取视频评论 | `GET /api/v1/douyin/web/fetch_video_comments` | `aweme_id`, `cursor` |
+| 搜索用户 | `GET /api/v1/douyin/web/fetch_user_search_result` | `keyword`, `cursor` |
+| 搜索视频 | `GET /api/v1/douyin/web/fetch_video_search_result` | `keyword`, `cursor` |
+| 热搜榜 | `GET /api/v1/douyin/web/fetch_hot_search_result` | 无 |
+
+### 响应要点
+- `unique_id` = 抖音号（@xxx），`sec_user_id` = URL 中的长 ID
+- 视频列表翻页用 `max_cursor`（不是 `cursor`）
+- 从抖音链接提取 `aweme_id`：URL 中的数字串
+
+---
+
+## 平台三：TikTok
+
+### 可用端点
+
+| 功能 | 端点 | 主要参数 |
+|------|------|---------|
+| 获取用户主页 | `GET /api/v1/tiktok/web/fetch_user_profile` | `uniqueId` |
+| 获取用户视频 | `GET /api/v1/tiktok/web/fetch_user_post` | `secUid`, `cursor`, `count` |
+| 获取视频详情 | `GET /api/v1/tiktok/web/fetch_post_detail` | `itemId` |
+| 通过分享链接获取视频 | `GET /api/v1/tiktok/app/v3/fetch_one_video_by_share_url` | `share_url` |
+| 获取视频评论 | `GET /api/v1/tiktok/web/fetch_post_comment` | `aweme_id`, `cursor` |
+| 搜索用户 | `GET /api/v1/tiktok/web/fetch_search_user` | `keyword`, `cursor` |
+| 搜索视频 | `GET /api/v1/tiktok/web/fetch_search_video` | `keyword`, `count`, `offset` |
+| 热门话题 | `GET /api/v1/tiktok/web/fetch_trending_searchwords` | 无 |
+
+### 响应要点
+- `uniqueId` = @用户名，`secUid` = URL 中的长 ID
+- 获取 `secUid`：先用 `uniqueId` 调用 `fetch_user_profile`
+- 视频列表翻页用 `cursor`
+
+---
+
+## 平台四：Bilibili
+
+### 可用端点
+
+| 功能 | 端点 | 主要参数 |
+|------|------|---------|
+| 获取用户主页 | `GET /api/v1/bilibili/web/fetch_user_profile` | `uid` |
+| 获取用户视频 | `GET /api/v1/bilibili/web/fetch_user_post_videos` | `uid`, `page`, `pagesize` |
+| 获取视频详情 | `GET /api/v1/bilibili/web/fetch_one_video` | `bvid` 或 `aid` |
+| 获取视频评论 | `GET /api/v1/bilibili/web/fetch_video_comments` | `bvid`, `page` |
+| 综合搜索 | `GET /api/v1/bilibili/web/fetch_general_search` | `keyword`, `page` |
+| 热搜 | `GET /api/v1/bilibili/web/fetch_hot_search` | 无 |
+
+### 响应要点
+- `uid` = 数字用户 ID（URL 中 `space.bilibili.com/123456` 的 `123456`）
+- `bvid` = BV 号（如 `BV1xx411c7mD`），`aid` = AV 号（数字）
+- 视频翻页用 `page`（从 1 开始）
+
+---
+
+## 平台五：微博（Weibo）
+
+### 可用端点
+
+| 功能 | 端点 | 主要参数 |
+|------|------|---------|
+| 获取用户信息 | `GET /api/v1/weibo/app/fetch_user_info` | `uid` 或 `screen_name` |
+| 获取用户微博 | `GET /api/v1/weibo/web/fetch_user_posts` | `uid`, `page` |
+| 获取用户视频 | `GET /api/v1/weibo/web_v2/fetch_user_video_list` | `uid`, `page` |
+| 综合搜索 | `GET /api/v1/weibo/web/fetch_search` | `keyword`, `page` |
+| 搜索用户 | `GET /api/v1/weibo/web_v2/fetch_user_search` | `keyword`, `page` |
+| 热搜榜 | `GET /api/v1/weibo/app/fetch_hot_search` | 无 |
+| AI 热点搜索 | `GET /api/v1/weibo/web_v2/fetch_ai_search` | `keyword` |
+
+### 响应要点
+- `uid` = 数字 ID，`screen_name` = 微博昵称
+- 从微博主页 URL 提取 uid：`weibo.com/u/1234567890`
+
+---
+
+## 平台六：YouTube
+
+> ⚠️ **仅支持搜索**，暂无频道详情或视频详情端点。
+
+### 可用端点
+
+| 功能 | 端点 | 主要参数 |
+|------|------|---------|
+| 综合搜索 | `GET /api/v1/youtube/web_v2/get_general_search` | `keyword` |
+| 搜索频道 | `GET /api/v1/youtube/web_v2/search_channels` | `keyword` |
+| 搜索视频 | `GET /api/v1/youtube/web/search_video` | `keyword` |
+| 搜索 Shorts | `GET /api/v1/youtube/web_v2/get_shorts_search` | `keyword` |
+| 搜索建议 | `GET /api/v1/youtube/web_v2/get_search_suggestions` | `keyword` |
+
+---
+
+## 平台七：微信公众号（WeChat MP）
+
+### 可用端点
+
+| 功能 | 端点 | 主要参数 |
+|------|------|---------|
+| 获取文章详情（JSON） | `GET /api/v1/wechat_mp/web/fetch_mp_article_detail_json` | `url`（文章链接） |
+| 获取文章详情（HTML） | `GET /api/v1/wechat_mp/web/fetch_mp_article_detail_html` | `url` |
+| 获取公众号文章列表 | `GET /api/v1/wechat_mp/web/fetch_mp_article_list` | `url` 或 `biz` |
+| 获取文章评论 | `GET /api/v1/wechat_mp/web/fetch_mp_article_comment_list` | `url` |
+| 获取文章阅读数 | `GET /api/v1/wechat_mp/web/fetch_mp_article_read_count` | `url` |
+| 获取相关文章 | `GET /api/v1/wechat_mp/web/fetch_mp_related_articles` | `url` |
+
+### 响应要点
+- 所有端点主要参数为文章 `url`（微信文章链接 `mp.weixin.qq.com/s/...`）
+- `biz` = 公众号唯一标识，可从文章 URL 中提取
+
+---
+
+## 平台八：微信视频号（WeChat Channels）
+
+### 可用端点
+
+| 功能 | 端点 | 主要参数 |
+|------|------|---------|
+| 搜索创作者 | `GET /api/v1/wechat_channels/fetch_user_search` | `keyword` |
+| 综合搜索 | `GET /api/v1/wechat_channels/fetch_default_search` | `keyword` |
+| 获取视频详情 | `GET /api/v1/wechat_channels/fetch_video_detail` | `video_id` 或 `url` |
+| 获取视频评论 | `GET /api/v1/wechat_channels/fetch_comments` | `video_id` |
+| 主页内容 | `GET /api/v1/wechat_channels/fetch_home_page` | `username` |
+| 热词 | `GET /api/v1/wechat_channels/fetch_hot_words` | 无 |
+
+---
+
+## 平台九：Twitter / X
+
+### 可用端点
+
+| 功能 | 端点 | 主要参数 |
+|------|------|---------|
+| 获取用户主页 | `GET /api/v1/twitter/web/fetch_user_profile` | `screen_name` 或 `user_id` |
+| 获取用户推文 | `GET /api/v1/twitter/web/fetch_user_post_tweet` | `user_id`, `cursor` |
+| 搜索推文 | `GET /api/v1/twitter/web/fetch_search_timeline` | `keyword`, `cursor` |
+
+### 响应要点
+- `screen_name` = @用户名（不含@），`user_id` = 数字 ID
+- 先用 `screen_name` 调 `fetch_user_profile` 获取 `user_id`，再翻页
+
+---
+
+## 批量翻页通用模板
 
 ```python
-# 用户信息响应结构
-user_data = result["data"]["data"]
-nickname = user_data.get("nickname")
-fans = user_data.get("fans")
-notes_count = user_data.get("noteCount")
-
-# 用户笔记列表结构
-inner = result["data"]["data"]
-notes = inner.get("notes", [])
-for note in notes:
-    note_id = note.get("id")          # 笔记 ID
-    title = note.get("display_title")  # 标题
-    likes = note.get("likes")          # 点赞数
-    desc = note.get("desc")            # 描述
-
-# 搜索用户结构
-users = result["data"]["data"]["users"]
-for user in users:
-    uid = user.get("id")
-    name = user.get("name")
-    fans_text = user.get("sub_title")  # 如 "粉丝 16.1万"
-
-# 笔记详情结构（get_note_info 响应）
-# 注意：data 是列表，note_list 也是列表
-note = result["data"]["data"][0]["note_list"][0]
-title      = note.get("title")
-desc       = note.get("desc")
-note_type  = note.get("type")           # "normal"（图文）或 "video"
-author     = note.get("user", {})
-  # author["userid"], author["nickname"]
-images_list = note.get("images_list", [])  # 图文笔记的图片列表
-video_info  = note.get("video", {})        # 视频笔记的视频信息
-
-# ⚠️ interact_info 为空！互动数据在顶层字段：
-liked_count     = note.get("liked_count", 0)      # 点赞数
-collected_count = note.get("collected_count", 0)  # 收藏数
-comments_count  = note.get("comments_count", 0)   # 评论数
-shared_count    = note.get("shared_count", 0)     # 分享数
-view_count      = note.get("view_count", 0)       # 浏览数
-topics     = note.get("topics", [])        # 话题标签，每项有 name 字段
-pub_ts     = note.get("time")              # 发布时间戳（秒，非毫秒！）
-ip_loc     = note.get("ip_location")       # 发布 IP 归属地
-# 时间转换：datetime.fromtimestamp(pub_ts).strftime('%Y-%m-%d %H:%M')
-
-# 封面提取
-if note.get("type") == "video":
-    thumb = note.get("video", {}).get("thumbnail", "")
-    cover_url = f"https://sns-na-i4.xhscdn.com/{thumb}" if thumb else None
-else:
-    imgs = note.get("images_list", [])
-    cover_url = imgs[0].get("original") if imgs else None  # 原图
-    # 或压缩版：imgs[0].get("url")
+async def fetch_all_pages(endpoint, base_params, cursor_key="cursor", data_key="list"):
+    """通用翻页抓取"""
+    all_items = []
+    cursor = None
+    while True:
+        params = {**base_params}
+        if cursor:
+            params[cursor_key] = cursor
+        result = await api_get(endpoint, params)
+        inner = result.get("data", {}).get("data", {})
+        items = inner.get(data_key, [])
+        all_items.extend(items)
+        has_more = inner.get("has_more", False)
+        cursor = inner.get(cursor_key)
+        if not has_more or not cursor:
+            break
+        await asyncio.sleep(0.5)
+    return all_items
 ```
 
-## 数据导出为 Excel
+> ⚠️ 不同平台 cursor_key 不同：小红书/TikTok/Twitter 用 `cursor`，抖音用 `max_cursor`，Bilibili/微博用 `page`（数字递增）
 
-```python
-import pandas as pd
-
-# notes 是从 API 获取的列表
-df = pd.DataFrame([{
-    "笔记ID": n.get("id"),
-    "标题": n.get("display_title"),
-    "点赞": n.get("likes", 0),
-    "描述": n.get("desc", "")
-} for n in notes])
-
-print(f"导出前验证 - {len(df)} 行，列：{list(df.columns)}")
-print(df.head(2).to_string())
-
-df.to_excel("xhs_notes.xlsx", index=False)
-print("已保存到 xhs_notes.xlsx")
-```
+---
 
 ## 常见问题
 
-- **400 错误**：该端点需要额外的 XHS cookies，换用 `share_text` 参数或换其他端点
-- **401 错误**：`TIKHUB_API_KEY` 环境变量未正确设置
-- **429 限流**：每次请求间加 `await asyncio.sleep(0.5~1)` 延迟，不要无限重试
-- **分享链接**：`xhslink.com` 短链可直接作为 `share_text` 传入，API 会自动解析
-- **cursor 为 None**：第一次请求不传 cursor，返回数据中的 `cursor` 用于下一页
-- **封面链接有时效性**：CDN URL 带签名参数（`sign=...&t=...`），抓取后立即下载，不要只存链接
+| 报错 | 可能原因 | 解决方法 |
+|------|---------|---------|
+| `400` | 端点需要额外参数或内容已删除 | 换分享链接方式，或换 v2/v3 端点 |
+| `401` | API Key 未配置 | 检查 `TIKHUB_API_KEY` 环境变量 |
+| `429` | 限流 | 每次请求间加 `await asyncio.sleep(0.5~1)` |
+| 超时 | VPN/代理冲突 | 切换 VPN 状态，`api.tikhub.io` 可能需要直连 |
+
+---
 
 ## API 基础信息
 
-- **Base URL**: `https://api.tikhub.io`
+- **Base URL**: `https://api.tikhub.io`（国内备用：`https://api.tikhub.dev`）
 - **鉴权**: `Authorization: Bearer {TIKHUB_API_KEY}`
-- **文档**: `https://api.tikhub.io`（Swagger UI）
-- **定价**: $0.001/次，详细定价见 [TikHub Pricing](https://user.tikhub.io/dashboard/pricing)
-- **响应缓存**: 成功请求会缓存 24 小时，重复请求不额外计费
+- **定价**: $0.001/次，详见 [TikHub Pricing](https://user.tikhub.io/dashboard/pricing)
+- **缓存**: 成功请求缓存 24 小时，重复请求不额外计费
+
+## 余额记录
+
+| 更新时间 | 余额 | 可抓条数（@$0.001/次）|
+|---------|------|---------------------|
+| 2026-03-26 | ¥32.00（约 $4.4） | ~4,400 条 |
+
+> **余额不足提醒**：余额低于 $0.5（约 500 条）时提醒用户充值。
