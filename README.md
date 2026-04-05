@@ -83,7 +83,7 @@ npx bubu-xhs-scraper-skill
 1. 前往 [user.tikhub.io](https://user.tikhub.io) 注册账号
 2. 在控制台中复制你的 API Key
 
-> TikHub 提供小红书底层数据接口。计费方式：约 **$0.001/次**，成功请求会缓存 24 小时（重复请求不额外计费）。详细定价见 [TikHub Pricing](https://user.tikhub.io/dashboard/pricing)。
+> TikHub 提供小红书底层数据接口。计费方式：大多数接口 **$0.01/次**，部分特殊接口 $0.001/次或 $0.011/次，成功请求会缓存 24 小时（重复请求不额外计费）。详细定价见 [TikHub Pricing](https://user.tikhub.io/dashboard/pricing)。
 
 ---
 
@@ -134,15 +134,19 @@ pip3 install httpx
 
 ## 支持的接口
 
-| 功能 | 接口路径 |
+| 功能 | 推荐接口 |
 |------|---------|
-| 搜索用户 | `GET /api/v1/xiaohongshu/web/search_users` |
-| 获取用户信息 | `GET /api/v1/xiaohongshu/app/get_user_info` |
-| 获取用户笔记列表 | `GET /api/v1/xiaohongshu/app/get_user_notes` |
-| 获取笔记详情 | `GET /api/v1/xiaohongshu/app/get_note_info` |
-| 获取笔记评论 | `GET /api/v1/xiaohongshu/app/get_note_comments` |
+| 搜索用户 | `GET /api/v1/xiaohongshu/web/search_users`（每页20条，支持翻页） |
+| **获取用户全部笔记** | `GET /api/v1/xiaohongshu/web/get_user_notes_v2`（支持翻页，稳定） |
+| 获取用户信息 | `GET /api/v1/xiaohongshu/app_v2/get_user_info` |
+| 获取笔记详情 | `GET /api/v1/xiaohongshu/app_v2/get_image_note_detail` / `get_video_note_detail` |
+| 获取笔记评论 | `GET /api/v1/xiaohongshu/app_v2/get_note_comments` |
+| 粉丝/关注列表 | `GET /api/v1/xiaohongshu/web_v2/fetch_follower_list`（cursor翻页） |
 | 按话题获取笔记 | `GET /api/v1/xiaohongshu/app/get_notes_by_topic` |
-| 首页推荐 | `GET /api/v1/xiaohongshu/web/get_home_recommend` |
+| 获取热榜 | `GET /api/v1/xiaohongshu/web_v2/fetch_hot_list` |
+| 商品详情/评测 | `GET /api/v1/xiaohongshu/app_v2/get_product_detail` |
+
+> **定价**：大多数接口 $0.01/次；`web/sign`、`get_note_id_and_xsec_token` 等 $0.001/次；`web/get_note_comments_v3` 等 $0.011/次。成功请求缓存24小时，重复不另计费。
 
 ---
 
@@ -200,6 +204,22 @@ https://www.xiaohongshu.com/explore/68304ca200000000...
 
 ---
 
+
+## 费用管理
+
+Claude Code 运行过程中会自动追踪 API 余额消耗。查看余额：
+
+```
+帮我查一下 TikHub API 还有多少余额
+```
+
+规划批量任务前，可以先估算费用：
+
+```
+这次抓取 100 个用户的笔记，预计花多少钱？
+```
+
+> 余额信息保存在 skill 目录的 `.state.json` 中（git 已忽略，不会泄露）。
 ## 开源协议
 
 MIT

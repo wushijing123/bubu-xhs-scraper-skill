@@ -25,7 +25,7 @@ const SKILL_FILE = join(__dirname, '..', 'skills', SKILL_NAME, 'SKILL.md');
 function printBanner() {
   console.log('\x1b[36m');
   console.log('╔══════════════════════════════════╗');
-  console.log('║     bubu-xhs-scraper-skill v1.1.0     ║');
+  console.log('║     bubu-xhs-scraper-skill v1.4.0     ║');
   console.log('║   Claude Code Skill Installer    ║');
   console.log('╚══════════════════════════════════╝');
   console.log('\x1b[0m');
